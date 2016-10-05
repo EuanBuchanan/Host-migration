@@ -2,7 +2,7 @@
 Usage:
     migrate.py init <initcsv>  [--CONFDIR=switchports]
                                 [--CONFILE=switchports.yaml]
-    migrate.py final <finalcsv> [--CONFDIR=switchports]
+    migrate.py mark <finalcsv> [--CONFDIR=switchports]
                                 [--CONFILE=switchports.yaml]
     migrate.py move <source> <destination> [--CONFDIR=switchports]
                                            [--CONFILE=switchports.yaml]
@@ -660,7 +660,7 @@ def main(docopt_args):
                           docopt_args['--CONFDIR'],
                           docopt_args['--CONFILE']
                           )
-    elif docopt_args['final']:
+    elif docopt_args['mark']:
        mark_switchports_final(docopt_args['<finalcsv>'],
                               docopt_args['--CONFDIR'],
                               docopt_args['--CONFILE'])
