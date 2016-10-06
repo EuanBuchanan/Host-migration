@@ -648,6 +648,99 @@ def update_switchports(updatecsv, confdir, confile, updatedir, updatefile):
     dump_switchports(switchports_d, updatedir, updatefile)
 
 
+def finalize(rundir, runsheet, confdir, confile, source, destination):
+
+    '''
+    Function matches PortSwitch.final of hosts being moved with
+    PortSwitch.switch_id of available port switches and returns configuration
+    to both enable the new port and disable the old port.
+
+    Parameters
+    ----------
+    rundir:         string, passed by docopt.
+                    The directory to save the run sheet to.
+    runsheet:       string, passed by docopt.
+                    The file to save the run sheet to.
+    confdir:        string, passed by docopt.
+                    The directory that instances of SwitchPort are stored in.
+    confile:        string, passed by docopt.
+                    The file that instances of SwitchPort are saved to.
+    source:         string, passed by docopt.
+                    Comma separated list of switch ids
+    destination:    string, passed by docopt.
+                    Comm separated list of switch ids
+
+    Returns
+    -------
+    None
+
+    Calls
+    -----
+    load_switchports(confdir, confile)
+    get_available_port_d(switchports_d, destination_t)
+    '''
+
+    logger = logging.getLogger()
+    logger.debug(print(rundir, runsheet, confdir,confile, source, destination))
+
+    # Load the switchport dictionary.
+    switchports_d = load_switchports(confdir, confile)
+
+    # Need turn $source and $destination in to tuples
+    source_t = tuple(source.split(','))
+    destination_t = tuple(destination.split(','))
+
+    # Need a dict of swtichports that are available for hosts to move to
+    available_ports_d = get_available_port_d(switchports_d, destination_t)
+    logger.info('Recieved dictionary available_ports_d')
+
+    # List for the run sheet
+    run_sheet_l = list()
+
+    # Sort the dictionary so that the run is repeatable, as dictonaries are random
+    sorted_available_ports_d = dict()
+    for destination_id in destination_t:
+        logging.debug('Sorting dictionary key %s ', destination_id)
+        sorted_available_ports_d[destination_id] = OrderedDict(
+            sorted(available_ports_d[destination_id].items(),
+                   key=lambda t: t[0]))
+    logger.debug('Sorted Dictionary %s', pp.pformat(sorted_available_ports_d))
+
+    # Match final destinations before allocating randomly
+    run_sheet_l, sorted_available_ports_d, switchports_d = \
+        match_final_state(switchports_d, sorted_available_ports_d,
+                          source_t, destination_t)
+    # Match rest of the ports
+
+    # Get number of available ports on each swtich so that hosts not allocated
+    # to a specific port can be distributed evenly
+    count = 0
+    dst_max_l = []
+    for dst in destination_t:
+        dst_max_l.append((len(sorted_available_ports_d[dst].values())))
+        logger.debug('dst_max_l: %s', pp.pformat(dst_max_l))
+    for source in source_t:
+        for source_port in switchports_d[source].values():
+            if (source_port.vlan == '1296' or source_port.vlan == '1297') \
+                    and source_port.status != 'disabled':
+                count += 1
+                logging.debug('Matched %s with %s, count: %s', source_port.vlan,
+                              source_port.status, count)
+
+                # Index returned by below matches the switch string in
+                # desination_t and its place in dst_max_l
+                max_dst_idx = dst_max_l.index(max(dst_max_l))
+                dst_max_l[max_dst_idx] -= 1
+                logging.debug('max_dst_idx: %s, dst_max_l %s',max_dst_idx,
+                              dst_max_l)
+                to_port = \
+                    sorted_available_ports_d[destination_t[max_dst_idx]].popitem()[1]
+                logger.debug('source_port %s, to_port: %s',
+                             pp.pformat(to_port), pp.pformat(to_port))
+                ports = (source_port, to_port)
+                run_sheet_l.append(configure_ports(ports))
+    logging.info('%s not mached to final swtich', count)
+    write_csv_file(run_sheet_l, rundir, runsheet)
 
 def main(docopt_args):
     """ main-entry point for program, expects dict with arguments from docopt() """
@@ -681,12 +774,12 @@ def main(docopt_args):
                             docopt_args['--UPDATEFILE'])
     elif docopt_args['final']:
         print('Matched final')
-        #move_interfaces( docopt_args['--RUNDIR'],
-        #                    docopt_args['--RUNSHEET'],
-        #                    docopt_args['--CONFDIR'],
-        #                    docopt_args['--CONFILE'],
-        #                    docopt_args['<source>'],
-        #                    docopt_args['<destination>'])
+        finalize( docopt_args['--RUNDIR'],
+                            docopt_args['--RUNSHEET'],
+                            docopt_args['--CONFDIR'],
+                            docopt_args['--CONFILE'],
+                            docopt_args['<source>'],
+                            docopt_args['<destination>'])
 
     #     load_switchports()
 
