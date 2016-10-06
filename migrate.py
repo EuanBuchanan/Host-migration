@@ -469,9 +469,11 @@ def configure_ports(ports):
 def move_interfaces(rundir, runsheet, confdir, confile, source, destination):
 
     '''
-    Function matches PortSwitch.final of hosts being moved with
-    PortSwitch.switch_id of available port switches and returns configuration
-    to both enable the new port and disable the old port.
+    Function generates enable and disable configuation for moving interfaces from one or more switches to one ore more
+    switches.
+
+    First, SwitchPorts.final is checked. If destination switch matches, an interface from that switch is allocated. All
+    other interfaces are distributed evenly over the destination switches.
 
     Parameters
     ----------
