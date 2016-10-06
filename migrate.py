@@ -14,6 +14,10 @@ Usage:
                                 [--UPDATEFILE=updated_switchport.yaml]
     migrate.py status <switch> [<port>] <status>  [--CONFDIR=switchports]
                                                   [--CONFILE=switchports.yaml]
+    migrate.py final <source> <destination> [--CONFDIR=switchports]
+                                           [--CONFILE=switchports.yaml]
+                                           [--RUNDIR=rundir]
+                                           [--RUNSHEET=runsheet.csv]
 
 Options:
     --CONFDIR=DIR      Directory where file storing state infromation of interfaces
@@ -318,8 +322,6 @@ def match_final_state(switchports_d, sorted_available_ports_d,
                 logger.debug('source_value.final: %s, source_vlaue.switch_id %s,\
                         destination_t, %s', pp.pformat(source_value.final),\
                         pp.pformat(source_value.switch_id), pp.pformat(destination_t))
-                # No need to check this port twice, delete from switchports_d
-                del(switchports_d[source][source_port])
                 count += 1
                 logging.debug('source_port.final %s, count %s', source_value.final, count)
                 source_value.status = 'disabled'
@@ -677,6 +679,14 @@ def main(docopt_args):
                             docopt_args['--CONFILE'],
                             docopt_args['--UPDATEDIR'],
                             docopt_args['--UPDATEFILE'])
+    elif docopt_args['final']:
+        print('Matched final')
+        #generate_run_sheet( docopt_args['--RUNDIR'],
+        #                    docopt_args['--RUNSHEET'],
+        #                    docopt_args['--CONFDIR'],
+        #                    docopt_args['--CONFILE'],
+        #                    docopt_args['<source>'],
+        #                    docopt_args['<destination>'])
 
     #     load_switchports()
 
