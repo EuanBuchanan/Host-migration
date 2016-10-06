@@ -466,7 +466,7 @@ def configure_ports(ports):
         enable_config])
     return(run_sheet_list)
 
-def generate_run_sheet(rundir, runsheet, confdir, confile, source, destination):
+def move_interfaces(rundir, runsheet, confdir, confile, source, destination):
 
     '''
     Function matches PortSwitch.final of hosts being moved with
@@ -667,7 +667,7 @@ def main(docopt_args):
                               docopt_args['--CONFDIR'],
                               docopt_args['--CONFILE'])
     elif docopt_args['move']:
-        generate_run_sheet( docopt_args['--RUNDIR'],
+        move_interfaces( docopt_args['--RUNDIR'],
                             docopt_args['--RUNSHEET'],
                             docopt_args['--CONFDIR'],
                             docopt_args['--CONFILE'],
@@ -681,7 +681,7 @@ def main(docopt_args):
                             docopt_args['--UPDATEFILE'])
     elif docopt_args['final']:
         print('Matched final')
-        #generate_run_sheet( docopt_args['--RUNDIR'],
+        #move_interfaces( docopt_args['--RUNDIR'],
         #                    docopt_args['--RUNSHEET'],
         #                    docopt_args['--CONFDIR'],
         #                    docopt_args['--CONFILE'],
