@@ -512,9 +512,6 @@ def move_interfaces(rundir, runsheet, confdir, confile, source, destination):
     available_ports_d = get_available_port_d(switchports_d, destination_t)
     logger.info('Recieved dictionary available_ports_d')
 
-    # List for the run sheet
-    run_sheet_l = list()
-
     # Sort the dictionary so that the run is repeatable, as dictonaries are random
     sorted_available_ports_d = dict()
     for destination_id in destination_t:
@@ -773,7 +770,6 @@ def main(docopt_args):
                             docopt_args['--UPDATEDIR'],
                             docopt_args['--UPDATEFILE'])
     elif docopt_args['final']:
-        print('Matched final')
         finalize( docopt_args['--RUNDIR'],
                             docopt_args['--RUNSHEET'],
                             docopt_args['--CONFDIR'],
