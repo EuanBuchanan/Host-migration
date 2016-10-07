@@ -466,6 +466,7 @@ def configure_ports(ports):
         enable_config])
     return(run_sheet_list)
 
+
 def move_interfaces(rundir, runsheet, confdir, confile, source, destination):
 
     '''
@@ -538,10 +539,11 @@ def move_interfaces(rundir, runsheet, confdir, confile, source, destination):
         logger.debug('dst_max_l: %s', pp.pformat(dst_max_l))
     for source in source_t:
         for source_port in switchports_d[source].values():
+            logger.debug('source_port.vlan: %s source_port.status %s',source_port.vlan, source_port.status)
             if (source_port.vlan == '1296' or source_port.vlan == '1297') \
                     and source_port.status != 'disabled':
                 count += 1
-                logging.debug('Matched %s with %s, count: %s', source_port.vlan,
+                logger.debug('Matched %s with %s, count: %s', source_port.vlan,
                         source_port.status, count)
 
                # Index returned by below matches the switch string in
@@ -709,36 +711,6 @@ def finalize(rundir, runsheet, confdir, confile, source, destination):
     run_sheet_l, sorted_available_ports_d, switchports_d = \
         match_final_state(switchports_d, sorted_available_ports_d,
                           source_t, destination_t)
-    # Match rest of the ports
-
-    # Get number of available ports on each swtich so that hosts not allocated
-    # to a specific port can be distributed evenly
-    count = 0
-    dst_max_l = []
-    for dst in destination_t:
-        dst_max_l.append((len(sorted_available_ports_d[dst].values())))
-        logger.debug('dst_max_l: %s', pp.pformat(dst_max_l))
-    for source in source_t:
-        for source_port in switchports_d[source].values():
-            if (source_port.vlan == '1296' or source_port.vlan == '1297') \
-                    and source_port.status != 'disabled':
-                count += 1
-                logging.debug('Matched %s with %s, count: %s', source_port.vlan,
-                              source_port.status, count)
-
-                # Index returned by below matches the switch string in
-                # desination_t and its place in dst_max_l
-                max_dst_idx = dst_max_l.index(max(dst_max_l))
-                dst_max_l[max_dst_idx] -= 1
-                logging.debug('max_dst_idx: %s, dst_max_l %s',max_dst_idx,
-                              dst_max_l)
-                to_port = \
-                    sorted_available_ports_d[destination_t[max_dst_idx]].popitem()[1]
-                logger.debug('source_port %s, to_port: %s',
-                             pp.pformat(to_port), pp.pformat(to_port))
-                ports = (source_port, to_port)
-                run_sheet_l.append(configure_ports(ports))
-    logging.info('%s not mached to final swtich', count)
     write_csv_file(run_sheet_l, rundir, runsheet)
 
 def main(docopt_args):
