@@ -411,7 +411,7 @@ def get_disable_port(old_switch, old_port, new_switch, new_port, vlan, descripti
     logger.debug('Getting disable config')
     disable_port_config = \
     '! disable configuration for ' + old_switch + ':' + old_port + '\n' +\
-    'show interface ' + old_port + 'status' + '\n' +\
+    'show interface ' + old_port + ' status' + '\n' +\
     '! If notconnect and patch has been moved, disable\n' +\
     'conf t\n' +\
     ' interface ' + old_port + '\n' +\
